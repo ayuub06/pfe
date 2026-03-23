@@ -1,0 +1,8 @@
+"node_modules/" 
+"frontend/node_modules/" 
+".env" 
+".vscode/" 
+"*.log" 
+"npm-debug.log*" 
+"frontend/build/" 
+"frontend/.env" 

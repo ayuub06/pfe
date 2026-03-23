@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result pre {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .room-list {
+            margin-top: 20px;
+        }
+        
+        .room-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .token-input {
+            margin-bottom: 20px;
+        }
+        
+        .token-input input {
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>🏫 Room Management System</h2>
+            
+            <div class="token-input">
+                <label>Authentication Token (from registration)</label>
+                <input type="text" id="token" placeholder="Paste your JWT token here" style="font-family: monospace;">
+                <small>Get token from registration response</small>
+            </div>
+            
+            <div class="grid-2">
+                <!-- Create Room Form -->
+                <div>
+                    <h3>Create New Room</h3>
+                    <form id="createRoomForm">
+                        <div class="form-group">
+                            <label>Room Name</label>
+                            <input type="text" id="roomName" placeholder="e.g., A101" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity</label>
+                            <input type="number" id="capacity" placeholder="Number of seats" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Building</label>
+                            <input type="text" id="building" placeholder="e.g., Building A" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Floor</label>
+                            <input type="number" id="floor" placeholder="Floor number" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Equipment (comma separated)</label>
+                            <input type="text" id="equipment" placeholder="e.g., Projector, Whiteboard">
+                        </div>
+                        <button type="submit">Create Room</button>
+                    </form>
+                </div>
+                
+                <!-- Check Availability Form -->
+                <div>
+                    <h3>Check Room Availability</h3>
+                    <form id="checkAvailabilityForm">
+                        <div class="form-group">
+                            <label>Room ID</label>
+                            <input type="text" id="checkRoomId" placeholder="Room ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="checkDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input type="time" id="checkStart" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="checkEnd" required>
+                        </div>
+                        <button type="submit">Check Availability</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="result" class="result"></div>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="fetchRooms()">Refresh Room List</button>
+                <button onclick="fetchStatistics()">Get Statistics</button>
+            </div>
+            
+            <div id="roomList" class="room-list">
+                <h3>Rooms List</h3>
+                <div id="rooms"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+        
+        document.getElementById('token').addEventListener('change', (e) => {
+            authToken = e.target.value;
+        });
+        
+        // Create Room
+        document.getElementById('createRoomForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            if (!authToken) {
+                showResult('Please paste your authentication token first', 'error');
+                return;
+            }
+            
+            const data = {
+                nom: document.getElementById('roomName').value,
+                capacite: parseInt(document.getElementById('capacity').value),
+                batiment: document.getElementById('building').value,
+                etage: parseInt(document.getElementById('floor').value),
+                equipment: document.getElementById('equipment').value.split(',').map(e => e.trim())
+            };
+            
+            showResult('Creating room...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/rooms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('✅ Room created successfully!', 'success', result);
+                    document.getElementById('createRoomForm').reset();
+                    fetchRooms();
+                } else {
+                    showResult('❌ Failed to create room', 'error', result);
+                }
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, 'error');
+            }
+        };
+        
+        // Check Availability
+        document.getElementById('checkAvailabilityForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            if (!authToken) {
+                showResult('Please paste your authentication token first', 'error');
+                return;
+            }
+            
+            const data = {
+                roomId: document.getElementById('checkRoomId').value,
+                date: document.getElementById('checkDate').value,
+                heure_debut: document.getElementById('checkStart').value,
+                heure_fin: document.getElementById('checkEnd').value
+            };
+            
+            showResult('Checking availability...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/rooms/check-availability', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.available) {
+                    showResult('✅ Room is available for this time slot!', 'success', result);
+                } else {
+                    showResult('❌ Room is NOT available for this time slot', 'error', result);
+                }
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, 'error');
+            }
+        };
+        
+        // Fetch all rooms
+        async function fetchRooms() {
+            if (!authToken) {
+                document.getElementById('rooms').innerHTML = '<p style="color: red;">Please enter your token first</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/rooms', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.rooms) {
+                    const roomsHtml = result.rooms.map(room => `
+                        <div class="room-item">
+                            <strong>${room.nom}</strong> - Building ${room.batiment}, Floor ${room.etage}<br>
+                            Capacity: ${room.capacite} students<br>
+                            Equipment: ${room.equipment?.join(', ') || 'None'}<br>
+                            ID: ${room._id}
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('rooms').innerHTML = roomsHtml || '<p>No rooms found. Create your first room!</p>';
+                } else {
+                    document.getElementById('rooms').innerHTML = '<p>Failed to fetch rooms</p>';
+                }
+            } catch (error) {
+                document.getElementById('rooms').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        // Fetch statistics
+        async function fetchStatistics() {
+            if (!authToken) {
+                showResult('Please paste your authentication token first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/rooms/statistics', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('📊 Room Statistics', 'success', result.statistics);
+                } else {
+                    showResult('Failed to fetch statistics', 'error', result);
+                }
+            } catch (error) {
+                showResult('Error: ' + error.message, 'error');
+            }
+        }
+        
+        function showResult(message, type, data = null) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result show ${type}`;
+            
+            let html = `<p>${message}</p>`;
+            if (data) {
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            
+            setTimeout(() => {
+                if (type !== 'error') {
+                    setTimeout(() => {
+                        resultDiv.classList.remove('show');
+                    }, 5000);
+                }
+            }, 3000);
+        }
+        
+        // Set default date to today
+        document.getElementById('checkDate').valueAsDate = new Date();
+    </script>
+</body>
+</html>
